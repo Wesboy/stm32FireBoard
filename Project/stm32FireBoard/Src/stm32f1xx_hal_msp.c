@@ -82,7 +82,20 @@ void HAL_MspInit(void)
 }
 
 /* USER CODE BEGIN 1 */
+void ResetUserTimer(uint32_t *Timer)
+{
+	*Timer = HAL_GetTick();
+}
 
+uint32_t ReadUserTimer(uint32_t *Timer)
+{
+	return ( HAL_GetTick() - *Timer);
+}
+
+void SetUserTimer(uint32_t *Timer,uint32_t T)
+{
+	*Timer = HAL_GetTick() + T;
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

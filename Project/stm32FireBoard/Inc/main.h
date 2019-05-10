@@ -54,7 +54,9 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void ResetUserTimer(uint32_t *Timer);
+uint32_t ReadUserTimer(uint32_t *Timer);
+void SetUserTimer(uint32_t *Timer,uint32_t T);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
