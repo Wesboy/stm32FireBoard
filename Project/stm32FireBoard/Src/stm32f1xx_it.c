@@ -56,6 +56,7 @@ uint16_t indexWave[] = {
 //计算PWM表有多少个元素
 uint16_t POINT_NUM = sizeof(indexWave)/sizeof(indexWave[0]); 
 __IO uint32_t rgb_color = 0xFFFFFF;
+#define AMPLITUDE_CLASS 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -238,7 +239,7 @@ void TIM3_IRQHandler(void)
 			//每个PWM表中的每个元素有AMPLITUDE_CLASS个等级，
 		  //每增加一级多输出一次脉冲，即PWM表中的元素多使用一次
 		  //使用256次，根据RGB颜色分量设置通道输出
-			if(amplitude_cnt > (2-1))		 						
+			if(amplitude_cnt > (AMPLITUDE_CLASS-1))		 						
 			{		
 				period_cnt++;
 				
@@ -278,7 +279,7 @@ void TIM3_IRQHandler(void)
 					else
 						htim3.Instance->CCR4 = 0;		//比较寄存器值为0，通道输出高电平，该通道LED灯灭	
 		}	
-		printf("CCR2:%x CCR3:%x CCR4:%x\r\n", htim3.Instance->CCR2, htim3.Instance->CCR3, htim3.Instance->CCR4);
+		
     if(__HAL_TIM_GET_IT_SOURCE(&htim3, TIM_IT_UPDATE) !=RESET)
     {
       __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);			
