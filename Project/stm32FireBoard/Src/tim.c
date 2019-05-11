@@ -22,6 +22,48 @@
 
 /* USER CODE BEGIN 0 */
 
+/**
+  * @brief  Enables or disables the specified TIM interrupts.
+  * @param  TIMx: where x can be 1 to 17 to select the TIMx peripheral.
+  * @param  TIM_IT: specifies the TIM interrupts sources to be enabled or disabled.
+  *   This parameter can be any combination of the following values:
+  *     @arg TIM_IT_Update: TIM update Interrupt source
+  *     @arg TIM_IT_CC1: TIM Capture Compare 1 Interrupt source
+  *     @arg TIM_IT_CC2: TIM Capture Compare 2 Interrupt source
+  *     @arg TIM_IT_CC3: TIM Capture Compare 3 Interrupt source
+  *     @arg TIM_IT_CC4: TIM Capture Compare 4 Interrupt source
+  *     @arg TIM_IT_COM: TIM Commutation Interrupt source
+  *     @arg TIM_IT_Trigger: TIM Trigger Interrupt source
+  *     @arg TIM_IT_Break: TIM Break Interrupt source
+  * @note 
+  *   - TIM6 and TIM7 can only generate an update interrupt.
+  *   - TIM9, TIM12 and TIM15 can have only TIM_IT_Update, TIM_IT_CC1,
+  *      TIM_IT_CC2 or TIM_IT_Trigger. 
+  *   - TIM10, TIM11, TIM13, TIM14, TIM16 and TIM17 can have TIM_IT_Update or TIM_IT_CC1.   
+  *   - TIM_IT_Break is used only with TIM1, TIM8 and TIM15. 
+  *   - TIM_IT_COM is used only with TIM1, TIM8, TIM15, TIM16 and TIM17.    
+  * @param  NewState: new state of the TIM interrupts.
+  *   This parameter can be: ENABLE or DISABLE.
+  * @retval None
+  */
+void TIM_ITConfig(TIM_TypeDef* TIMx, uint16_t TIM_IT, FunctionalState NewState)
+{  
+  /* Check the parameters */
+  assert_param(IS_TIM_ALL_PERIPH(TIMx));
+  assert_param(IS_TIM_IT(TIM_IT));
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+  
+  if (NewState != DISABLE)
+  {
+    /* Enable the Interrupt sources */
+    TIMx->DIER |= TIM_IT;
+  }
+  else
+  {
+    /* Disable the Interrupt sources */
+    TIMx->DIER &= (uint16_t)~TIM_IT;
+  }
+}
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim3;
@@ -36,7 +78,7 @@ void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 256;
+  htim3.Init.Period = 1024;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -60,7 +102,7 @@ void MX_TIM3_Init(void)
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
@@ -121,7 +163,11 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
     __HAL_AFIO_REMAP_TIM3_PARTIAL();
 
   /* USER CODE BEGIN TIM3_MspPostInit 1 */
-
+		
+		TIM_ITConfig(htim3.Instance, TIM_IT_UPDATE,  ENABLE);
+		HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+		HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+		HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
   /* USER CODE END TIM3_MspPostInit 1 */
   }
 
