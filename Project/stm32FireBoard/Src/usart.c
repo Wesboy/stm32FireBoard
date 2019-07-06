@@ -287,34 +287,25 @@ void USART_printf(USART_TypeDef *USARTx, char *Data, ...)
       {
       case 's':
         s = va_arg(ap, const char *);
-
         for (; *s; s++)
         {
           HAL_UART_Transmit(uartHandle, (uint8_t *)s, 1, 0xFFFF);
         }
-
         Data++;
-
         break;
 
       case 'd':
-
         d = va_arg(ap, int);
-
         itoa(d, (char *)buf);
-
         for (s = (char *)buf; *s; s++)
         {
           HAL_UART_Transmit(uartHandle, (uint8_t *)s, 1, 0xFFFF);
         }
-
         Data++;
-
         break;
 
       default:
         Data++;
-
         break;
       }
     }
@@ -353,7 +344,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
     else
     {
-      /* code */
       readbuf[irx_Cnt++] = rbuf1;
       if ((readbuf[irx_Cnt - 1] == 0x0a) && (readbuf[irx_Cnt - 2] == 0x0d))
       {
