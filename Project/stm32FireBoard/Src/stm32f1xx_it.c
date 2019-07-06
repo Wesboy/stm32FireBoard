@@ -269,29 +269,23 @@ void TIM3_IRQHandler(void)
 	if(__HAL_TIM_GET_FLAG(&htim3, TIM_FLAG_UPDATE) != RESET)  
 	{
 			amplitude_cnt++;
-				
 			//每个PWM表中的每个元素有AMPLITUDE_CLASS个等级，
 		  //每增加一级多输出一次脉冲，即PWM表中的元素多使用一次
 		  //使用256次，根据RGB颜色分量设置通道输出
 			if(amplitude_cnt > (AMPLITUDE_CLASS-1))		 						
 			{		
 				period_cnt++;
-				
 				//每个PWM表中的每个元素使用period_class次
 				if(period_cnt > period_class)
 				{				
-
 					pwm_index++;												//标志PWM表指向下一个元素
-				
-					//若PWM表已到达结尾，重新指向表头
-					if( pwm_index >=  POINT_NUM)			
+					
+					if( pwm_index >=  POINT_NUM)			 //若PWM表已到达结尾，重新指向表头
 					{
 						pwm_index=0;								
 					}
-					
 					period_cnt = 0;											//重置周期计数标志
 				}
-				
 				amplitude_cnt=0;											//重置幅值计数标志
 		}	
 		else

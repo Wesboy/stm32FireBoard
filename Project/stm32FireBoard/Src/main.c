@@ -128,9 +128,9 @@ int main(void)
 	{
 		Error_Handler();
 	}
-	printf ( "\r\nWF-ESP8266 WiFi Mode Test!!!\r\n" );                         
-	
-  ESP8266_StaTcpClient_UnvarnishTest();
+	printf ( "\r\nWF-ESP8266 WiFi Mode Test!!!\r\n" );
+
+  ESP8266_Config(ESP8266_ApSsid, ESP8266_ApPwd, ESP8266_TcpServer_IP, ESP8266_TcpServer_Port);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -140,12 +140,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		if(ReadUserTimer(&timer) > 1000)
+		if(ReadUserTimer(&timer) > 2000)
 		{
 			ResetUserTimer(&timer);
-			printf ( "\r\nWhile Mode Test!!!\r\n" ); 
-		}
-    comRxHandle();
+
+      comRxHandle();
+    }
   }
   /* USER CODE END 3 */
 }

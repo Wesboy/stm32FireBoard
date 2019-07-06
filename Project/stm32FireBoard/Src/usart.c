@@ -24,10 +24,12 @@
 #include <stdarg.h>
 #include <string.h>
 #include "bsp_esp8266.h"
+#include "MySystem.h"
 
 uint8_t rbuf;
 uint8_t rbuf1;
 uint8_t ComRxBuff[256];
+uint8_t ComTxBuff[256];
 uint8_t irx_Cnt = 0;
 extern volatile uint8_t ucTcpClosedFlag;
 USART_RECEIVETYPE UsartType;
@@ -342,6 +344,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
       if ((ComRxBuff[irx_Cnt - 1] == 0x0a) && (ComRxBuff[irx_Cnt - 2] == 0x0d))
       {
         HAL_UART_Transmit(&huart1, ComRxBuff, irx_Cnt, 100);
+        if (ComRxBuff[0] == 0xaa && ComRxBuff[1] == 0x55)
+        {
+          setLedColor(ComRxBuff[2]);
+        }
         irx_Cnt = 0;
         memset(ComRxBuff, 0, sizeof(ComRxBuff));
       }
