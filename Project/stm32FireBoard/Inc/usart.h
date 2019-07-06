@@ -49,7 +49,7 @@ void MX_USART1_UART_Init(void);
 void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-extern void UsartReceive_IDLE(UART_HandleTypeDef *huart);
+extern void ESP8266UART_Receive_IDLE(UART_HandleTypeDef *huart);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

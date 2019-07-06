@@ -5,12 +5,6 @@
 
 struct STRUCT_USARTx_Fram strEsp8266_Fram_Record = {0};
 
-static void ESP8266_GPIO_Config(void);
-static void ESP8266_USART_Config(void);
-static void ESP8266_USART_NVIC_Configuration(void);
-
-struct STRUCT_USARTx_Fram strEsp8266_Fram_Record = {0};
-
 /**
   * @brief  ESP8266初始化函数
   * @param  无
@@ -18,9 +12,7 @@ struct STRUCT_USARTx_Fram strEsp8266_Fram_Record = {0};
   */
 void ESP8266_Init(void)
 {
-
 	macESP8266_RST_HIGH_LEVEL();
-
 	macESP8266_CH_DISABLE();
 }
 
@@ -58,15 +50,15 @@ extern UART_HandleTypeDef huart3;
 
 bool ESP8266_Cmd(char *cmd, char *reply1, char *reply2, uint32_t waittime)
 {
-	strEsp8266_Fram_Record.InfBit.FramLength = 0; //??????????????????
+	strEsp8266_Fram_Record.InfBit.FramLength = 0; 
 
 	macESP8266_Usart("%s\r\n", cmd);
 
 	//macPC_Usart("%s\r\n", cmd);
-	if ((reply1 == 0) && (reply2 == 0)) //?????????????
+	if ((reply1 == 0) && (reply2 == 0)) 
 		return true;
 
-	HAL_Delay(waittime); //???
+	HAL_Delay(waittime); 
 
 	strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.InfBit.FramLength] = '\0';
 
@@ -90,15 +82,6 @@ bool ESP8266_Cmd(char *cmd, char *reply1, char *reply2, uint32_t waittime)
  * 返回  : 无
  * 调用  ：被外部调用
  */
-//void ESP8266_AT_Test ( void )
-//{
-//	macESP8266_RST_HIGH_LEVEL();
-//
-//	HAL_Delay ( 1000 );
-//
-//	while ( ! ESP8266_Cmd ( "AT", "OK", NULL, 500 ) ) ESP8266_Rst ();
-
-//}
 void ESP8266_AT_Test(void)
 {
 	char count = 0;

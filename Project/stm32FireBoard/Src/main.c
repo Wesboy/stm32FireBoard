@@ -29,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "bsp_esp8266.h"
 #include "esp8266_test.h"
+#include "MySystem.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -144,6 +145,7 @@ int main(void)
 			ResetUserTimer(&timer);
 			printf ( "\r\nWhile Mode Test!!!\r\n" ); 
 		}
+    comRxHandle();
   }
   /* USER CODE END 3 */
 }

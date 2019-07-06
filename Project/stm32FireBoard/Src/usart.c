@@ -27,7 +27,7 @@
 
 uint8_t rbuf;
 uint8_t rbuf1;
-uint8_t readbuf[256];
+uint8_t ComRxBuff[256];
 uint8_t irx_Cnt = 0;
 extern volatile uint8_t ucTcpClosedFlag;
 USART_RECEIVETYPE UsartType;
@@ -229,11 +229,11 @@ void itoa(int n, char *s)
 {
   int i, sign;
   if ((sign = n) < 0)
-    n = -n;          
+    n = -n;
   i = 0;
   do
   {
-    s[i++] = n % 10 + '0'; 
+    s[i++] = n % 10 + '0';
   } while ((n /= 10) > 0);
   if (sign < 0)
     s[i++] = '-';
@@ -314,20 +314,14 @@ void USART_printf(USART_TypeDef *USARTx, char *Data, ...)
   }
 }
 
-void UsartReceive_IDLE(UART_HandleTypeDef *huart)
+void ESP8266UART_Receive_IDLE(UART_HandleTypeDef *huart)
 {
-  uint32_t temp;
-
   if ((__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE) != RESET))
   {
     __HAL_UART_CLEAR_IDLEFLAG(huart);
-//    HAL_UART_DMAStop(huart);
-//    temp = huart->hdmarx->Instance->CNDTR;
-//    UsartType.RX_Size = RX_LEN - temp;
-//    UsartType.RX_flag = 1;
-//    HAL_UART_Receive_DMA(huart, UsartType.RX_pData, RX_LEN);
-		  strEsp8266_Fram_Record.InfBit.FramFinishFlag = 1;
-      ucTcpClosedFlag = strstr(strEsp8266_Fram_Record.Data_RX_BUF, "CLOSED\r\n") ? 1 : 0;
+
+    strEsp8266_Fram_Record.InfBit.FramFinishFlag = 1;
+    ucTcpClosedFlag = strstr(strEsp8266_Fram_Record.Data_RX_BUF, "CLOSED\r\n") ? 1 : 0;
   }
 }
 
@@ -338,27 +332,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   {
     if (irx_Cnt > 255)
     {
-      HAL_UART_Transmit(&huart1, readbuf, irx_Cnt, 100);
+      HAL_UART_Transmit(&huart1, ComRxBuff, irx_Cnt, 100);
       irx_Cnt = 0;
-      memset(readbuf, 0, sizeof(readbuf));
+      memset(ComRxBuff, 0, sizeof(ComRxBuff));
     }
     else
     {
-      readbuf[irx_Cnt++] = rbuf1;
-      if ((readbuf[irx_Cnt - 1] == 0x0a) && (readbuf[irx_Cnt - 2] == 0x0d))
+      ComRxBuff[irx_Cnt++] = rbuf1;
+      if ((ComRxBuff[irx_Cnt - 1] == 0x0a) && (ComRxBuff[irx_Cnt - 2] == 0x0d))
       {
-
-        HAL_UART_Transmit(&huart1, readbuf, irx_Cnt, 100);
+        HAL_UART_Transmit(&huart1, ComRxBuff, irx_Cnt, 100);
         irx_Cnt = 0;
-        memset(readbuf, 0, sizeof(readbuf));
+        memset(ComRxBuff, 0, sizeof(ComRxBuff));
       }
     }
-    HAL_UART_Receive_IT(&huart1, &rbuf1, 1);
+
+    if (HAL_UART_Receive_IT(&huart1, &rbuf1, 1) != HAL_OK)
+    {
+      Error_Handler();
+    }
   }
   else if (huart == &huart3)
   {
-    if (strEsp8266_Fram_Record.InfBit.FramLength < (RX_BUF_MAX_LEN - 1)) 
+    if (strEsp8266_Fram_Record.InfBit.FramLength < (RX_BUF_MAX_LEN - 1))
       strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.InfBit.FramLength++] = rbuf;
+
     if (HAL_UART_Receive_IT(&huart3, &rbuf, 1) != HAL_OK)
     {
       Error_Handler();
