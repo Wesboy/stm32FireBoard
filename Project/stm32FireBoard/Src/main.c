@@ -20,13 +20,15 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "bsp_esp8266.h"
+#include "esp8266_test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,7 +78,11 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart3;
 
+extern uint8_t rbuf;
+extern uint8_t rbuf1;
 /* USER CODE END 0 */
 
 /**
@@ -107,10 +113,23 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM3_Init();
+  MX_DMA_Init();
   MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+	ESP8266_Init();         																									
+	if(HAL_UART_Receive_IT(&huart1, &rbuf1, 1)!= HAL_OK)
+	{
+		Error_Handler();
+	}
+	if(HAL_UART_Receive_IT(&huart3, &rbuf, 1)!= HAL_OK)
+	{
+		Error_Handler();
+	}
+	printf ( "\r\nWF-ESP8266 WiFi Mode Test!!!\r\n" );                         
 	
+  ESP8266_StaTcpClient_UnvarnishTest();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -123,6 +142,7 @@ int main(void)
 		if(ReadUserTimer(&timer) > 1000)
 		{
 			ResetUserTimer(&timer);
+			printf ( "\r\nWhile Mode Test!!!\r\n" ); 
 		}
   }
   /* USER CODE END 3 */
