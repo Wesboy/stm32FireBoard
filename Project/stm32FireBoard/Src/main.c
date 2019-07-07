@@ -93,7 +93,6 @@ extern uint8_t rbuf1;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint32_t timer;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -140,12 +139,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		if(ReadUserTimer(&timer) > 2000)
-		{
-			ResetUserTimer(&timer);
-
-      comRxHandle();
-    }
+    WifiESP8266_RxHandle();
+    comRxHandle();
   }
   /* USER CODE END 3 */
 }

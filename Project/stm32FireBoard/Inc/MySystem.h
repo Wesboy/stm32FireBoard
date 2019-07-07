@@ -18,5 +18,6 @@
 extern void comRxHandle(void);
 extern void setLedColor(uint8_t iled);
 extern void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port);
+extern void WifiESP8266_RxHandle(void);
 
 #endif
