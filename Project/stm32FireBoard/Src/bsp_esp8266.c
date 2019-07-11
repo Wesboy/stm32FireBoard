@@ -50,29 +50,30 @@ extern UART_HandleTypeDef huart3;
 
 bool ESP8266_Cmd(char *cmd, char *reply1, char *reply2, uint32_t waittime)
 {
-	strEsp8266_Fram_Record.InfBit.FramLength = 0; 
-
+	strEsp8266_Fram_Record.iFramelow = 0;
+	strEsp8266_Fram_Record.iFramehigh = 0;
+	
 	macESP8266_Usart("%s\r\n", cmd);
-
-	//macPC_Usart("%s\r\n", cmd);
+	
 	if ((reply1 == 0) && (reply2 == 0)) 
 		return true;
 
 	HAL_Delay(waittime); 
 
-	strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.InfBit.FramLength] = '\0';
+	strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.iFramehigh] = '\0';
+	strEsp8266_Fram_Record.iFramelow = strEsp8266_Fram_Record.iFramehigh;
 
 	macPC_Usart("%s", strEsp8266_Fram_Record.Data_RX_BUF);
 
 	if ((reply1 != 0) && (reply2 != 0))
-		return ((bool)strstr(strEsp8266_Fram_Record.Data_RX_BUF, reply1) ||
-				(bool)strstr(strEsp8266_Fram_Record.Data_RX_BUF, reply2));
+		return ((bool)strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, reply1) ||
+				(bool)strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, reply2));
 
 	else if (reply1 != 0)
-		return ((bool)strstr(strEsp8266_Fram_Record.Data_RX_BUF, reply1));
+		return ((bool)strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, reply1));
 
 	else
-		return ((bool)strstr(strEsp8266_Fram_Record.Data_RX_BUF, reply2));
+		return ((bool)strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, reply2));
 }
 
 /*
@@ -261,13 +262,13 @@ uint8_t ESP8266_Get_LinkStatus(void)
 {
 	if (ESP8266_Cmd("AT+CIPSTATUS", "OK", 0, 500))
 	{
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "STATUS:2\r\n"))
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "STATUS:2\r\n"))
 			return 2;
 
-		else if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "STATUS:3\r\n"))
+		else if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "STATUS:3\r\n"))
 			return 3;
 
-		else if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "STATUS:4\r\n"))
+		else if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "STATUS:4\r\n"))
 			return 4;
 	}
 
@@ -287,27 +288,27 @@ uint8_t ESP8266_Get_IdLinkStatus(void)
 
 	if (ESP8266_Cmd("AT+CIPSTATUS", "OK", 0, 500))
 	{
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:0,"))
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:0,"))
 			ucIdLinkStatus |= 0x01;
 		else
 			ucIdLinkStatus &= ~0x01;
 
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:1,"))
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:1,"))
 			ucIdLinkStatus |= 0x02;
 		else
 			ucIdLinkStatus &= ~0x02;
 
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:2,"))
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:2,"))
 			ucIdLinkStatus |= 0x04;
 		else
 			ucIdLinkStatus &= ~0x04;
 
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:3,"))
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:3,"))
 			ucIdLinkStatus |= 0x08;
 		else
 			ucIdLinkStatus &= ~0x08;
 
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:4,"))
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "+CIPSTATUS:4,"))
 			ucIdLinkStatus |= 0x10;
 		else
 			ucIdLinkStatus &= ~0x10;
@@ -332,7 +333,7 @@ uint8_t ESP8266_Inquire_ApIp(char *pApIp, uint8_t ucArrayLength)
 
 	ESP8266_Cmd("AT+CIFSR", "OK", 0, 500);
 
-	pCh = strstr(strEsp8266_Fram_Record.Data_RX_BUF, "APIP,\"");
+	pCh = strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "APIP,\"");
 
 	if (pCh)
 		pCh += 6;
@@ -428,20 +429,22 @@ char *ESP8266_ReceiveString(FunctionalState enumEnUnvarnishTx)
 {
 	char *pRecStr = 0;
 
-	strEsp8266_Fram_Record.InfBit.FramLength = 0;
-	strEsp8266_Fram_Record.InfBit.FramFinishFlag = 0;
+	strEsp8266_Fram_Record.iFramehigh = 0;
+	strEsp8266_Fram_Record.iFramelow = 0;
+	strEsp8266_Fram_Record.FrameFinishFlag = 0;
 
-	while (!strEsp8266_Fram_Record.InfBit.FramFinishFlag)
+	while (!strEsp8266_Fram_Record.FrameFinishFlag)
 		;
-	strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.InfBit.FramLength] = '\0';
+	strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.iFramehigh] = '\0';
+	strEsp8266_Fram_Record.iFramelow = strEsp8266_Fram_Record.iFramehigh;
 
 	if (enumEnUnvarnishTx)
-		pRecStr = strEsp8266_Fram_Record.Data_RX_BUF;
+		pRecStr = (char *)strEsp8266_Fram_Record.Data_RX_BUF;
 
 	else
 	{
-		if (strstr(strEsp8266_Fram_Record.Data_RX_BUF, "+IPD"))
-			pRecStr = strEsp8266_Fram_Record.Data_RX_BUF;
+		if (strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "+IPD"))
+			pRecStr = (char *)strEsp8266_Fram_Record.Data_RX_BUF;
 	}
 
 	return pRecStr;

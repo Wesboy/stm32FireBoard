@@ -28,9 +28,10 @@
 
 uint8_t rbuf;
 uint8_t rbuf1;
-uint8_t ComRxBuff[256];
+uint8_t ComRxBuff[COM_REBUFF_LEN_MAX];
 uint8_t ComTxBuff[256];
-uint8_t irx_Cnt = 0;
+uint16_t irUart1_low = 0;
+uint16_t irUart1_high = 0;
 extern volatile uint8_t ucTcpClosedFlag;
 USART_RECEIVETYPE UsartType;
 
@@ -322,8 +323,8 @@ void ESP8266UART_Receive_IDLE(UART_HandleTypeDef *huart)
   {
     __HAL_UART_CLEAR_IDLEFLAG(huart);
 
-    strEsp8266_Fram_Record.InfBit.FramFinishFlag = 1;
-    ucTcpClosedFlag = strstr(strEsp8266_Fram_Record.Data_RX_BUF, "CLOSED\r\n") ? 1 : 0;
+    strEsp8266_Fram_Record.FrameFinishFlag = 1;
+    ucTcpClosedFlag = strstr((char *)strEsp8266_Fram_Record.Data_RX_BUF, "CLOSED\r\n") ? 1 : 0;
   }
 }
 
@@ -332,25 +333,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   UNUSED(huart);
   if (huart == &huart1)
   {
-    if (irx_Cnt > 255)
+    if (irUart1_high > COM_REBUFF_LEN_MAX)
     {
-      HAL_UART_Transmit(&huart1, ComRxBuff, irx_Cnt, 100);
-      irx_Cnt = 0;
-      memset(ComRxBuff, 0, sizeof(ComRxBuff));
+      irUart1_high = 0;
     }
     else
     {
-      ComRxBuff[irx_Cnt++] = rbuf1;
-      if ((ComRxBuff[irx_Cnt - 1] == 0x0a) && (ComRxBuff[irx_Cnt - 2] == 0x0d))
-      {
-        HAL_UART_Transmit(&huart1, ComRxBuff, irx_Cnt, 100);
-        if (ComRxBuff[0] == 0xaa && ComRxBuff[1] == 0x55)
-        {
-          setLedColor(ComRxBuff[2]);
-        }
-        irx_Cnt = 0;
-        memset(ComRxBuff, 0, sizeof(ComRxBuff));
-      }
+      ComRxBuff[irUart1_high++] = rbuf1;
     }
 
     if (HAL_UART_Receive_IT(&huart1, &rbuf1, 1) != HAL_OK)
@@ -360,8 +349,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   else if (huart == &huart3)
   {
-    if (strEsp8266_Fram_Record.InfBit.FramLength < (RX_BUF_MAX_LEN - 1))
-      strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.InfBit.FramLength++] = rbuf;
+    if (strEsp8266_Fram_Record.iFramehigh < (RX_BUF_MAX_LEN - 1))
+      strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.iFramehigh++] = rbuf;
+    else
+      strEsp8266_Fram_Record.iFramehigh = 0;
 
     if (HAL_UART_Receive_IT(&huart3, &rbuf, 1) != HAL_OK)
     {

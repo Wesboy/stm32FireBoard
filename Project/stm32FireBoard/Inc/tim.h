@@ -27,12 +27,16 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 extern TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN Private defines */
+
+#define RGB_LED_RED 0xFF0000
+#define RGB_LED_GREEN 0x00FF00
+#define RGB_LED_BLUE 0x0000FF
 
 /* USER CODE END Private defines */
 
@@ -42,6 +46,9 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
                     
 /* USER CODE BEGIN Prototypes */
 
+extern void setLedColor(uint8_t iled, uint16_t ired, uint16_t igreen, uint16_t iblue);
+extern void setLedFlash(uint8_t iLed, bool bOpen);
+void LED_Timer_Handle(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

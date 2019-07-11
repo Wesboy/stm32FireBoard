@@ -7,6 +7,10 @@
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 
+extern uint16_t irUart1_low;
+extern uint16_t irUart1_high;
+extern uint8_t ComRxBuff[256];
+
 uint32_t timer;
 
 extern __IO uint32_t rgb_color;
@@ -31,62 +35,128 @@ void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port)
         ;
 
     printf("\r\n配置ESP8266 已完成\r\n");
+		
+		memset(strEsp8266_Fram_Record.Data_RX_BUF, 0, sizeof(strEsp8266_Fram_Record.Data_RX_BUF));
+		strEsp8266_Fram_Record.iFramehigh = 0;
+		strEsp8266_Fram_Record.iFramelow = 0;
+}
+
+static void ProtocolDataHandle(uint8_t *buf, uint8_t iLenIndex)
+{
+    uint8_t i = 0;
+
+    if (buf[i] == 0xB1) //LED Red
+    {
+        if (buf[i + 1] == 0x01)
+        {
+            setLedColor(1, 255, 0, 0);
+        }
+        else
+        {
+            setLedColor(1, 0, 0, 0);
+        }
+    }
+}
+
+static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighIndex)
+{
+
+    static uint8_t iFrameStatus;
+    static uint8_t iFrameLen;
+    static uint8_t iFrameLenIndex;
+    static uint8_t check;
+    static uint8_t rbuf[PROTOCOL_LEN_MAX];
+
+    if (*iLowIndex != iHighIndex)
+    {
+        switch (iFrameStatus)
+        {
+        case 0:
+            if (buf[*iLowIndex] == 0x55)
+            {
+                iFrameStatus = 1;
+            }
+            break;
+        case 1:
+            if (buf[*iLowIndex] == 0xaa)
+            {
+                iFrameStatus = 2;
+            }
+            else
+            {
+                iFrameStatus = 0;
+            }
+
+            break;
+        case 2:
+            if (buf[*iLowIndex] == 0)
+            {
+                iFrameStatus = 0;
+            }
+            else
+            {
+                iFrameStatus = 3;
+                check = buf[*iLowIndex];
+                iFrameLen = check;
+                if (iFrameLen > PROTOCOL_LEN_MAX)
+                {
+                    iFrameStatus = 0;
+                    printf("Protocol length over error!\r\n");
+                }
+                iFrameLenIndex = 0;
+            }
+            break;
+        case 3:
+            if (iFrameLenIndex < iFrameLen - 1)
+            {
+                rbuf[iFrameLenIndex] = buf[*iLowIndex];
+                check += buf[*iLowIndex];
+                iFrameLenIndex++;
+            }
+            else
+            {
+                if (buf[*iLowIndex] == check)
+                {
+                    printf("data ok %x %x\r\n", rbuf[0], rbuf[1]);
+                    ProtocolDataHandle(rbuf, iFrameLenIndex);
+                }
+                else
+                {
+                    printf("data CRC ERROR!\r\n");
+                }
+                check = 0;
+                iFrameStatus = 0;
+            }
+            break;
+        default:
+            check = 0;
+            iFrameStatus = 0;
+            iFrameLen = 0;
+            break;
+        }
+        if (*iLowIndex > COM_REBUFF_LEN_MAX)
+            (*iLowIndex) = 0;
+        else
+            (*iLowIndex)++;
+    }
 }
 
 void comRxHandle(void)
 {
-
-    char sStr[20] = {0};
-    char cStr[50] = {0};
-    if (ReadUserTimer(&timer) > 2000)
-    {
-        ResetUserTimer(&timer);
-
-        sprintf(sStr, "Led Status:");
-        if (rgb_color & 0xFFFFFF)
-        {
-            if ((rgb_color & RGB_LED_RED) == RGB_LED_RED)
-                sprintf(cStr, "RED ON\r\n");
-            if ((rgb_color & RGB_LED_GREEN) == RGB_LED_GREEN)
-                sprintf(cStr, "GREEN ON\r\n");
-            if ((rgb_color & RGB_LED_BLUE) == RGB_LED_BLUE)
-                sprintf(cStr, "BLUE ON\r\n");
-        }
-        else
-        {
-            /* code */
-            sprintf(cStr, "OFF\r\n");
-        }
-
-        ESP8266_SendString(ENABLE, sStr, 0, Single_ID_0);
-        ESP8266_SendString(ENABLE, cStr, 0, Single_ID_0);
-    }
-
+    ProtocolDecoder(ComRxBuff, &irUart1_low, irUart1_high);
 }
 
 void WifiESP8266_RxHandle(void)
 {
     uint8_t bStatus;
 
-    if (strEsp8266_Fram_Record.InfBit.FramFinishFlag)  //处理esp8266的串口数据
+    if (strEsp8266_Fram_Record.FrameFinishFlag) //处理esp8266的串口数据
     {
-        strEsp8266_Fram_Record.InfBit.FramFinishFlag = 0;
-        
-        //数据发送给到串口COM1
-        HAL_UART_Transmit(&huart1, (uint8_t *)strEsp8266_Fram_Record.Data_RX_BUF, strEsp8266_Fram_Record.InfBit.FramLength, 100);
-
-        if (strEsp8266_Fram_Record.Data_RX_BUF[0] == 0xaa && strEsp8266_Fram_Record.Data_RX_BUF[1] == 0x55)
+        strEsp8266_Fram_Record.FrameFinishFlag = 0;
+        while (strEsp8266_Fram_Record.iFramelow != strEsp8266_Fram_Record.iFramehigh)
         {
-            rgb_color = 0x0;
-            if (strEsp8266_Fram_Record.Data_RX_BUF[2] & 0x01)
-                rgb_color |= RGB_LED_RED;
-            if (strEsp8266_Fram_Record.Data_RX_BUF[2] & 0x02)
-                rgb_color |= RGB_LED_GREEN;
-            if (strEsp8266_Fram_Record.Data_RX_BUF[2] & 0x04)
-                rgb_color |= RGB_LED_BLUE;
+            ProtocolDecoder(strEsp8266_Fram_Record.Data_RX_BUF, &strEsp8266_Fram_Record.iFramelow, strEsp8266_Fram_Record.iFramehigh);
         }
-        strEsp8266_Fram_Record.InfBit.FramLength = 0;
-        memset(strEsp8266_Fram_Record.Data_RX_BUF, 0, sizeof(strEsp8266_Fram_Record.Data_RX_BUF));
     }
 
     if (ucTcpClosedFlag) //检测是否失去连接
@@ -110,27 +180,4 @@ void WifiESP8266_RxHandle(void)
         while (!ESP8266_UnvarnishSend())
             ;
     }
-}
-
-void setLedColor(uint8_t iled)
-{
-    uint32_t rgb_t = 0x0;
-
-    if (iled & 0x7)
-    {
-        if (iled & 0x01)
-        {
-            rgb_t |= RGB_LED_RED;
-        }
-        if (iled & 0x02)
-        {
-            rgb_t |= RGB_LED_GREEN;
-        }
-        if (iled & 0x04)
-        {
-            rgb_t |= RGB_LED_BLUE;
-        }
-    }
-
-    rgb_color = rgb_t;
 }
