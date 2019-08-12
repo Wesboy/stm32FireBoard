@@ -349,52 +349,13 @@ void LED_Timer_Handle(void)
 //        htim3.Instance->CCR4 = indexWave[pwm_index]; //根据PWM表修改定时器的比较寄存器值
 //      else
 //        htim3.Instance->CCR4 = 0; //比较寄存器值为0，通道输出高电平，该通道LED灯灭
-    }
-
-    if (amplitude_cnt_g > (AMPLITUDE_CLASS - 1 - 50))
-    {
-      period_cnt++;
-      //每个PWM表中的每个元素使用period_class次
-      if (period_cnt > period_class)
-      {
-        pwm_index++; //标志PWM表指向下一个元素
-
-        if (pwm_index >= POINT_NUM) //若PWM表已到达结尾，重新指向表头
-        {
-          pwm_index = 0;
-        }
-        period_cnt = 0; //重置周期计数标志
-      }
-      amplitude_cnt_g = 0; //重置幅值计数标志
-    }
-    else
-    {
       //绿
-//      if (((rgb_color & 0x00FF00) >> 8) >= amplitude_cnt_g)
+//      if ((rgb_color & 0x00FF00) >= amplitude_cnt_b)
 //        htim3.Instance->CCR3 = indexWave[pwm_index]; //根据PWM表修改定时器的比较寄存器值
 //      else
 //        htim3.Instance->CCR3 = 0; //比较寄存器值为0，通道输出高电平，该通道LED灯灭
-    }
-
-    if (amplitude_cnt > (AMPLITUDE_CLASS - 1 - 125))
-    {
-      period_cnt++;
-      //每个PWM表中的每个元素使用period_class次
-      if (period_cnt > period_class)
-      {
-        pwm_index++; //标志PWM表指向下一个元素
-
-        if (pwm_index >= POINT_NUM) //若PWM表已到达结尾，重新指向表头
-        {
-          pwm_index = 0;
-        }
-        period_cnt = 0; //重置周期计数标志
-      }
-      amplitude_cnt = 0; //重置幅值计数标志
-    }
-    else
-    {
-//      if (((rgb_color & 0xFF0000) >> 16) >= amplitude_cnt)
+      //红
+//      if ((rgb_color & 0xFF0000) >= amplitude_cnt_b)
 //        htim3.Instance->CCR2 = indexWave[pwm_index]; //根据PWM表修改定时器的比较寄存器值
 //      else
 //        htim3.Instance->CCR2 = 0; //比较寄存器值为0，通道输出高电平，该通道LED灯灭

@@ -17,7 +17,7 @@ extern __IO uint32_t rgb_color;
 
 void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port)
 {
-    printf("\r\nÕıÔÚÅäÖÃESP8266_Config ......\r\n");
+    printf("\r\næ­£åœ¨é…ç½®ESP8266_Config ......\r\n");
     macESP8266_CH_ENABLE();
 
     ESP8266_AT_Test();
@@ -34,28 +34,38 @@ void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port)
     while (!ESP8266_UnvarnishSend())
         ;
 
-    printf("\r\nÅäÖÃESP8266 ÒÑÍê³É\r\n");
+    printf("\r\né…ç½®ESP8266 å·²å®Œæˆ\r\n");
 		
 		memset(strEsp8266_Fram_Record.Data_RX_BUF, 0, sizeof(strEsp8266_Fram_Record.Data_RX_BUF));
 		strEsp8266_Fram_Record.iFramehigh = 0;
 		strEsp8266_Fram_Record.iFramelow = 0;
 }
 
+static void setLedOn(uint8_t iLed, uint8_t bOn)
+{
+    if (bOn == 0x01)
+    {
+        setLedColor(iLed, 255, 255, 255);
+    }
+    else
+    {
+        setLedColor(iLed, 0, 0, 0);
+    }
+}
+
 static void ProtocolDataHandle(uint8_t *buf, uint8_t iLenIndex)
 {
     uint8_t i = 0;
 
-    if (buf[i] == 0xB1) //LED Red
+    switch(buf[i]&0xF0)
     {
-        if (buf[i + 1] == 0x01)
-        {
-            setLedColor(1, 255, 0, 0);
-        }
-        else
-        {
-            setLedColor(1, 0, 0, 0);
-        }
+        case 0xB0:
+            setLedOn(buf[i]&0xF, buf[i+1]);
+            break;
+        default:
+            break;
     }
+
 }
 
 static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighIndex)
@@ -139,7 +149,7 @@ static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighInd
         else
             (*iLowIndex)++;
     }
-}
+} 
 
 void comRxHandle(void)
 {
@@ -150,7 +160,7 @@ void WifiESP8266_RxHandle(void)
 {
     uint8_t bStatus;
 
-    if (strEsp8266_Fram_Record.FrameFinishFlag) //´¦Àíesp8266µÄ´®¿ÚÊı¾İ
+    if (strEsp8266_Fram_Record.FrameFinishFlag) //å¤„ç†esp8266çš„ä¸²å£æ•°æ®
     {
         strEsp8266_Fram_Record.FrameFinishFlag = 0;
         while (strEsp8266_Fram_Record.iFramelow != strEsp8266_Fram_Record.iFramehigh)
@@ -159,22 +169,22 @@ void WifiESP8266_RxHandle(void)
         }
     }
 
-    if (ucTcpClosedFlag) //¼ì²âÊÇ·ñÊ§È¥Á¬½Ó
+    if (ucTcpClosedFlag) //æ£€æµ‹æ˜¯å¦å¤±å»è¿æ¥
     {
-        ESP8266_ExitUnvarnishSend(); //ÍË³öÍ¸´«Ä£Ê½
+        ESP8266_ExitUnvarnishSend(); //é€€å‡ºé€ä¼ æ¨¡å¼
 
         do
-            bStatus = ESP8266_Get_LinkStatus(); //»ñÈ¡Á¬½Ó×´Ì¬
+            bStatus = ESP8266_Get_LinkStatus(); //è·å–è¿æ¥çŠ¶æ€
         while (!bStatus);
 
-        if (bStatus == 4) //È·ÈÏÊ§È¥Á¬½ÓºóÖØÁ¬
+        if (bStatus == 4) //ç¡®è®¤å¤±å»è¿æ¥åé‡è¿
         {
-            printf("\r\nÕıÔÚÖØÁ¬ÈÈµãºÍ·şÎñÆ÷ ......\r\n");
+            printf("\r\næ­£åœ¨é‡è¿çƒ­ç‚¹å’ŒæœåŠ¡å™¨ ......\r\n");
             while (!ESP8266_JoinAP(macUser_ESP8266_ApSsid, macUser_ESP8266_ApPwd))
                 ;
             while (!ESP8266_Link_Server(enumTCP, macUser_ESP8266_TcpServer_IP, macUser_ESP8266_TcpServer_Port, Single_ID_0))
                 ;
-            printf("\r\nÖØÁ¬ÈÈµãºÍ·şÎñÆ÷³É¹¦\r\n");
+            printf("\r\né‡è¿çƒ­ç‚¹å’ŒæœåŠ¡å™¨æˆåŠŸ\r\n");
         }
 
         while (!ESP8266_UnvarnishSend())

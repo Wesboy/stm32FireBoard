@@ -118,11 +118,14 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-	ESP8266_Init();         																									
+	        																									
 	if(HAL_UART_Receive_IT(&huart1, &rbuf1, 1)!= HAL_OK)
 	{
 		Error_Handler();
 	}
+	
+#if WIFI_EN	
+	ESP8266_Init(); 
 	if(HAL_UART_Receive_IT(&huart3, &rbuf, 1)!= HAL_OK)
 	{
 		Error_Handler();
@@ -130,6 +133,7 @@ int main(void)
 	printf ( "\r\nWF-ESP8266 WiFi Mode Test!!!\r\n" );
 
   ESP8266_Config(ESP8266_ApSsid, ESP8266_ApPwd, ESP8266_TcpServer_IP, ESP8266_TcpServer_Port);
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -139,7 +143,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+#if WIFI_EN
     WifiESP8266_RxHandle();
+#endif
     comRxHandle();
   }
   /* USER CODE END 3 */
