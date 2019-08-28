@@ -64,6 +64,10 @@ __heap_base
 Heap_Mem        SPACE   Heap_Size
 __heap_limit
 
+				IMPORT xPortPendSVHandler
+				IMPORT xPortSysTickHandler
+				IMPORT vPortSVCHandler
+					
                 PRESERVE8
                 THUMB
 
@@ -85,11 +89,11 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     0                          ; Reserved
                 DCD     0                          ; Reserved
                 DCD     0                          ; Reserved
-                DCD     SVC_Handler                ; SVCall Handler
+                DCD     vPortSVCHandler                ; SVCall Handler
                 DCD     DebugMon_Handler           ; Debug Monitor Handler
                 DCD     0                          ; Reserved
-                DCD     PendSV_Handler             ; PendSV Handler
-                DCD     SysTick_Handler            ; SysTick Handler
+                DCD     xPortPendSVHandler             ; PendSV Handler
+                DCD     xPortSysTickHandler            ; SysTick Handler
 
                 ; External Interrupts
                 DCD     WWDG_IRQHandler            ; Window Watchdog
@@ -133,7 +137,7 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     USART2_IRQHandler          ; USART2
                 DCD     USART3_IRQHandler          ; USART3
                 DCD     EXTI15_10_IRQHandler       ; EXTI Line 15..10
-                DCD     RTC_Alarm_IRQHandler        ; RTC Alarm through EXTI Line
+                DCD     RTCAlarm_IRQHandler        ; RTC Alarm through EXTI Line
                 DCD     USBWakeUp_IRQHandler       ; USB Wakeup from suspend
                 DCD     TIM8_BRK_IRQHandler        ; TIM8 Break
                 DCD     TIM8_UP_IRQHandler         ; TIM8 Update
@@ -256,7 +260,7 @@ Default_Handler PROC
                 EXPORT  USART2_IRQHandler          [WEAK]
                 EXPORT  USART3_IRQHandler          [WEAK]
                 EXPORT  EXTI15_10_IRQHandler       [WEAK]
-                EXPORT  RTC_Alarm_IRQHandler        [WEAK]
+                EXPORT  RTCAlarm_IRQHandler        [WEAK]
                 EXPORT  USBWakeUp_IRQHandler       [WEAK]
                 EXPORT  TIM8_BRK_IRQHandler        [WEAK]
                 EXPORT  TIM8_UP_IRQHandler         [WEAK]
@@ -317,7 +321,7 @@ USART1_IRQHandler
 USART2_IRQHandler
 USART3_IRQHandler
 EXTI15_10_IRQHandler
-RTC_Alarm_IRQHandler
+RTCAlarm_IRQHandler
 USBWakeUp_IRQHandler
 TIM8_BRK_IRQHandler
 TIM8_UP_IRQHandler
