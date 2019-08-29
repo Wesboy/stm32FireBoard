@@ -9,21 +9,21 @@
 #define PROTOCOL_LEN_MAX 12
 #define COM_REBUFF_LEN_MAX 256
 
-//#define ESP8266_ApSsid "chen159"     //要连接的热点的名称
-//#define ESP8266_ApPwd "chun..134802" //要连接的热点的密钥
+
+#define ESP8266_ApSsid "chen159"     //要连接的热点的名称
+#define ESP8266_ApPwd "chun..134802" //要连接的热点的密钥
 
 //#define ESP8266_TcpServer_IP "192.168.28.126" //要连接的服务器的 IP
 //#define ESP8266_TcpServer_Port "8080"         //要连接的服务器的端口
+#define      ESP8266_TcpServer_IP                 "192.168.28.203"      //要连接的服务器的 IP
+#define      ESP8266_TcpServer_Port               "8080"               //要连接的服务器的端口
 
+// #define ESP8266_ApSsid "TP-LINK_172932"     //要连接的热点的名称
+// #define ESP8266_ApPwd "fly654312" //要连接的热点的密钥
 
-#define ESP8266_ApSsid "TP-LINK_172932"     //要连接的热点的名称
-#define ESP8266_ApPwd "fly654312" //要连接的热点的密钥
+// #define ESP8266_TcpServer_IP "192.128.1.100" //要连接的服务器的 IP
+// #define ESP8266_TcpServer_Port "8080"         //要连接的服务器的端口
 
-#define ESP8266_TcpServer_IP "192.128.1.100" //要连接的服务器的 IP
-#define ESP8266_TcpServer_Port "8080"         //要连接的服务器的端口
-
-extern void comRxHandle(void);
-extern void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port);
-extern void WifiESP8266_RxHandle(void);
+extern void SystemTaskInit(void);
 
 #endif
