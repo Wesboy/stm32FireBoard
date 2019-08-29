@@ -4,18 +4,24 @@
 #include "esp8266_test.h"
 #include <string.h>
 
+
+static TaskHandle_t AppTaskCreate_Handle = NULL;
+static TaskHandle_t AppTaskConnectWifi_Handle = NULL;
+
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
+
+extern uint8_t rbuf;
+extern uint8_t rbuf1;
 
 extern uint16_t irUart1_low;
 extern uint16_t irUart1_high;
 extern uint8_t ComRxBuff[256];
 
-uint32_t timer;
 
 extern __IO uint32_t rgb_color;
 
-void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port)
+static void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port)
 {
     printf("\r\n正在配置ESP8266_Config ......\r\n");
     macESP8266_CH_ENABLE();
@@ -36,9 +42,9 @@ void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *dst_port)
 
     printf("\r\n配置ESP8266 已完成\r\n");
 		
-		memset(strEsp8266_Fram_Record.Data_RX_BUF, 0, sizeof(strEsp8266_Fram_Record.Data_RX_BUF));
-		strEsp8266_Fram_Record.iFramehigh = 0;
-		strEsp8266_Fram_Record.iFramelow = 0;
+    memset(strEsp8266_Fram_Record.Data_RX_BUF, 0, sizeof(strEsp8266_Fram_Record.Data_RX_BUF));
+    strEsp8266_Fram_Record.iFramehigh = 0;
+    strEsp8266_Fram_Record.iFramelow = 0;
 }
 
 static void setLedOn(uint8_t iLed, uint8_t bOn)
@@ -151,12 +157,12 @@ static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighInd
     }
 } 
 
-void comRxHandle(void)
+static void comRxHandle(void)
 {
     ProtocolDecoder(ComRxBuff, &irUart1_low, irUart1_high);
 }
 
-void WifiESP8266_RxHandle(void)
+static void WifiESP8266_RxHandle(void)
 {
     uint8_t bStatus;
 
@@ -190,4 +196,78 @@ void WifiESP8266_RxHandle(void)
         while (!ESP8266_UnvarnishSend())
             ;
     }
+}
+
+
+
+
+
+
+static void vRxDataTask( void * pvParameters )
+{
+	for(;;)
+	{
+        comRxHandle();
+        WifiESP8266_RxHandle();
+	}
+	
+	//delete task
+}
+
+static void vLedFlash( void * pvParameters )
+{
+	for(;;)
+	{
+        setLedColor(3, 255, 255, 255);
+        vTaskDelay(1000);
+        setLedColor(3, 0, 0, 0);
+        vTaskDelay(1000);
+	}
+	
+	//delete task
+}
+
+static void ConnectWifiESP8266( void * pvParameters )
+{
+
+    ESP8266_Init(); 
+    if(HAL_UART_Receive_IT(&huart3, &rbuf, 1)!= HAL_OK)
+    {
+        Error_Handler();
+    }
+    printf ( "\r\nWF-ESP8266 WiFi Mode Test!!!\r\n" );
+
+    ESP8266_Config(ESP8266_ApSsid, ESP8266_ApPwd, ESP8266_TcpServer_IP, ESP8266_TcpServer_Port);
+
+    vTaskDelete(AppTaskConnectWifi_Handle);
+	//delete task
+}
+
+static void vTaskStart( void * pvParameters )
+{
+    taskENTER_CRITICAL();           
+
+    xTaskCreate(vRxDataTask, "RxDataTask", 256, NULL, 2, NULL);
+    xTaskCreate(vLedFlash, "LedFlash", 256, NULL, 3, NULL);
+    xTaskCreate(ConnectWifiESP8266, "ConnectWifi", 256, NULL, 4, &AppTaskConnectWifi_Handle);
+    //delete task
+
+    vTaskDelete(AppTaskCreate_Handle);
+
+    taskEXIT_CRITICAL();
+}
+
+void SystemTaskInit(void)
+{
+    
+    BaseType_t xReturn = pdPASS;
+	        																									
+	if(HAL_UART_Receive_IT(&huart1, &rbuf1, 1)!= HAL_OK)
+	{
+		Error_Handler();
+	}
+
+    xReturn = xTaskCreate(vTaskStart, "TaskStart", 256, NULL, 1, &AppTaskCreate_Handle);
+    if(xReturn == pdPASS)
+        vTaskStartScheduler();
 }

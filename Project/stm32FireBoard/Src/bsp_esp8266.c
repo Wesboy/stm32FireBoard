@@ -30,7 +30,7 @@ void ESP8266_Rst(void)
 
 #else
 	macESP8266_RST_LOW_LEVEL();
-	HAL_Delay(500);
+	vTaskDelay(500);
 	macESP8266_RST_HIGH_LEVEL();
 #endif
 }
@@ -58,7 +58,7 @@ bool ESP8266_Cmd(char *cmd, char *reply1, char *reply2, uint32_t waittime)
 	if ((reply1 == 0) && (reply2 == 0)) 
 		return true;
 
-	HAL_Delay(waittime); 
+	vTaskDelay(waittime); 
 
 	strEsp8266_Fram_Record.Data_RX_BUF[strEsp8266_Fram_Record.iFramehigh] = '\0';
 	strEsp8266_Fram_Record.iFramelow = strEsp8266_Fram_Record.iFramehigh;
@@ -88,7 +88,7 @@ void ESP8266_AT_Test(void)
 	char count = 0;
 
 	macESP8266_RST_HIGH_LEVEL();
-	HAL_Delay(1000);
+	vTaskDelay(1000);
 	while (count < 10)
 	{
 		if (ESP8266_Cmd("AT", "OK", NULL, 500))
@@ -378,9 +378,9 @@ bool ESP8266_UnvarnishSend(void)
  */
 void ESP8266_ExitUnvarnishSend(void)
 {
-	HAL_Delay(1000);
+	vTaskDelay(1000);
 	macESP8266_Usart("+++");
-	HAL_Delay(500);
+	vTaskDelay(500);
 }
 
 /*

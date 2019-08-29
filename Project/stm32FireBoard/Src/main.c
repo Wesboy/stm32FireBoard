@@ -27,13 +27,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "bsp_esp8266.h"
-#include "esp8266_test.h"
-#include "MySystem.h"
-
-
-#include "FreeRTOS.h"
-#include "task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,18 +59,11 @@ PUTCHAR_PROTOTYPE
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-static TaskHandle_t AppTaskCreate_Handle = NULL;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart3;
-
-extern uint8_t rbuf;
-extern uint8_t rbuf1;
 
 void SystemClock_Config(void);
 /* USER CODE END PV */
@@ -91,46 +77,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
-
-void vTaskFunction1( void * pvParameters )
-{
-	for(;;)
-	{
-    setLedColor(1, 255, 255, 255);
-    vTaskDelay(1000);
-    setLedColor(1, 0, 0, 0);
-    vTaskDelay(1000);
-	}
-	
-	//delete task
-}
-
-void vTaskFunction2( void * pvParameters )
-{
-	for(;;)
-	{
-    setLedColor(2, 255, 255, 255);
-    vTaskDelay(2000);
-    setLedColor(2, 0, 0, 0);
-    vTaskDelay(2000);
-	}
-	
-	//delete task
-}
-
-void vTaskStart( void * pvParameters )
-{
-	taskENTER_CRITICAL();           
-
-	xTaskCreate(vTaskFunction1, "Task1", 512, NULL, 2, NULL);
-	xTaskCreate(vTaskFunction2, "Task2", 512, NULL, 3, NULL);
-	//delete task
-  
-  vTaskDelete(AppTaskCreate_Handle);
-
-  taskEXIT_CRITICAL();
-}
 /* USER CODE END 0 */
 
 /**
@@ -140,7 +86,6 @@ void vTaskStart( void * pvParameters )
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  BaseType_t xReturn = pdPASS;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -166,31 +111,10 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-	        																									
-	if(HAL_UART_Receive_IT(&huart1, &rbuf1, 1)!= HAL_OK)
-	{
-		Error_Handler();
-	}
-
   printf("Main First\r\n");
   setLedColor(4, 255, 255, 255);
 	
-
-  xReturn =	xTaskCreate(vTaskStart, "TaskStart", 512, NULL, 1, &AppTaskCreate_Handle);
-	
-  if(xReturn == pdPASS)
-    vTaskStartScheduler();
-
-#if WIFI_EN	
-	ESP8266_Init(); 
-	if(HAL_UART_Receive_IT(&huart3, &rbuf, 1)!= HAL_OK)
-	{
-		Error_Handler();
-	}
-	printf ( "\r\nWF-ESP8266 WiFi Mode Test!!!\r\n" );
-
-  ESP8266_Config(ESP8266_ApSsid, ESP8266_ApPwd, ESP8266_TcpServer_IP, ESP8266_TcpServer_Port);
-#endif
+  SystemTaskInit();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -200,10 +124,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-#if WIFI_EN
-    WifiESP8266_RxHandle();
-#endif
-//    comRxHandle();
   }
   /* USER CODE END 3 */
 }

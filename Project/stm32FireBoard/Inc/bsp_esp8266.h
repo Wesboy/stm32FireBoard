@@ -3,6 +3,7 @@
 
 //#include "stm32f10x.h"
 #include "stm32f1xx_hal.h"
+#include "main.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -10,7 +11,7 @@
 #pragma anon_unions
 #endif
 
-/******************************* ESP8266 Êı¾İÀàĞÍ¶¨Òå ***************************/
+/******************************* ESP8266 æ•°æ®ç±»å‹å®šä¹‰ ***************************/
 typedef enum
 {
 	STA,
@@ -43,10 +44,10 @@ typedef enum
 	WPA_WPA2_PSK = 4,
 } ENUM_AP_PsdMode_TypeDef;
 
-/******************************* ESP8266 Íâ²¿È«¾Ö±äÁ¿ÉùÃ÷ ***************************/
-#define RX_BUF_MAX_LEN 1024 //×î´ó½ÓÊÕ»º´æ×Ö½ÚÊı
+/******************************* ESP8266 å¤–éƒ¨å…¨å±€å˜é‡å£°æ˜ ***************************/
+#define RX_BUF_MAX_LEN 1024 //æœ€å¤§æ¥æ”¶ç¼“å­˜å­—èŠ‚æ•°
 
-extern struct STRUCT_USARTx_Fram //´®¿ÚÊı¾İÖ¡µÄ´¦Àí½á¹¹Ìå
+extern struct STRUCT_USARTx_Fram //ä¸²å£æ•°æ®å¸§çš„å¤„ç†ç»“æ„ä½“
 {
 	uint8_t Data_RX_BUF[RX_BUF_MAX_LEN];
 
@@ -56,7 +57,7 @@ extern struct STRUCT_USARTx_Fram //´®¿ÚÊı¾İÖ¡µÄ´¦Àí½á¹¹Ìå
 
 } strEsp8266_Fram_Record;
 
-/******************************** ESP8266 Á¬½ÓÒı½Å¶¨Òå ***********************************/
+/******************************** ESP8266 è¿æ¥å¼•è„šå®šä¹‰ ***********************************/
 #define macESP8266_CH_PD_APBxClock_FUN RCC_APB2PeriphClockCmd
 #define macESP8266_CH_PD_CLK RCC_APB2Periph_GPIOB
 #define macESP8266_CH_PD_PORT GPIOB
@@ -82,7 +83,7 @@ extern struct STRUCT_USARTx_Fram //´®¿ÚÊı¾İÖ¡µÄ´¦Àí½á¹¹Ìå
 #define macESP8266_USART_INT_FUN USART3_IRQHandler
 
 void USART_printf(USART_TypeDef *USARTx, char *Data, ...);
-/*********************************************** ESP8266 º¯Êıºê¶¨Òå *******************************************/
+/*********************************************** ESP8266 å‡½æ•°å®å®šä¹‰ *******************************************/
 #define macESP8266_Usart(fmt, ...) USART_printf(macESP8266_USARTx, fmt, ##__VA_ARGS__)
 #define macPC_Usart(fmt, ...) printf(fmt, ##__VA_ARGS__)
 //#define     macPC_Usart( fmt, ... )
@@ -93,7 +94,7 @@ void USART_printf(USART_TypeDef *USARTx, char *Data, ...);
 #define macESP8266_RST_HIGH_LEVEL() HAL_GPIO_WritePin(macESP8266_RST_PORT, macESP8266_RST_PIN, GPIO_PIN_SET)
 #define macESP8266_RST_LOW_LEVEL() HAL_GPIO_WritePin(macESP8266_RST_PORT, macESP8266_RST_PIN, GPIO_PIN_RESET)
 
-/****************************************** ESP8266 º¯ÊıÉùÃ÷ ***********************************************/
+/****************************************** ESP8266 å‡½æ•°å£°æ˜ ***********************************************/
 void ESP8266_Init(void);
 void ESP8266_Rst(void);
 bool ESP8266_Cmd(char *cmd, char *reply1, char *reply2, uint32_t waittime);
