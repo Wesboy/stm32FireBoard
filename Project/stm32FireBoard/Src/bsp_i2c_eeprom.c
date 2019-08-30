@@ -155,7 +155,7 @@ void I2C_EE_BufferWrite(uint8_t* pBuffer, uint8_t WriteAddr, uint16_t NumByteToW
       while(NumOfPage--)
       {
         I2C_EE_PageWrite(pBuffer, WriteAddr, I2C_PageSize); 
-    	I2C_EE_WaitEepromStandbyState();
+    	  I2C_EE_WaitEepromStandbyState();
         WriteAddr +=  I2C_PageSize;
         pBuffer += I2C_PageSize;
       }
@@ -217,7 +217,11 @@ void I2C_EE_BufferWrite(uint8_t* pBuffer, uint8_t WriteAddr, uint16_t NumByteToW
   */
 uint32_t I2C_EE_ByteWrite(uint8_t* pBuffer, uint8_t WriteAddr) 
 {
-  HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDRESS, WriteAddr, 1, pBuffer, 1, I2CT_LONG_TIMEOUT);
+  HAL_StatusTypeDef bStatus;
+
+  bStatus = HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDRESS, WriteAddr, 1, pBuffer, 1, I2CT_LONG_TIMEOUT);
+
+  printf("I2C_EE_ByteWrite Status:%d\r\n", bStatus);
   return 1;
 }
 
@@ -233,7 +237,11 @@ uint32_t I2C_EE_ByteWrite(uint8_t* pBuffer, uint8_t WriteAddr)
   */
 uint32_t I2C_EE_PageWrite(uint8_t* pBuffer, uint8_t WriteAddr, uint8_t NumByteToWrite)
 {
-  HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDRESS, WriteAddr, NumByteToWrite, pBuffer, NumByteToWrite, I2CT_LONG_TIMEOUT);
+  HAL_StatusTypeDef bStatus;
+
+  bStatus = HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDRESS, WriteAddr, NumByteToWrite, pBuffer, NumByteToWrite, I2CT_LONG_TIMEOUT);
+
+  printf("I2C_EE_PageWrite Status:%d\r\n", bStatus);
 
   return 1;
 }
@@ -249,7 +257,11 @@ uint32_t I2C_EE_PageWrite(uint8_t* pBuffer, uint8_t WriteAddr, uint8_t NumByteTo
   */
 uint32_t I2C_EE_BufferRead(uint8_t* pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
 {
-  HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDRESS, ReadAddr, NumByteToRead, pBuffer, NumByteToRead, I2CT_LONG_TIMEOUT);
+  HAL_StatusTypeDef bStatus;
+
+  bStatus = HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDRESS, ReadAddr, NumByteToRead, pBuffer, NumByteToRead, I2CT_LONG_TIMEOUT);
+
+  printf("I2C_EE_BufferRead Status:%d\r\n", bStatus);
 
   return 1;
 }
