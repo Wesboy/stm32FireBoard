@@ -34,6 +34,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 
 #include "bsp_esp8266.h"
+#include "bsp_color_led.h"
 #include "esp8266_test.h"
 #include "MySystem.h"
 

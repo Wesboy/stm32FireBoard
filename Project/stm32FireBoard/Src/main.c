@@ -114,8 +114,8 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   printf("Main First\r\n");
-  setLedColor(4, 255, 255, 255);
-	
+//  SetColorValue(255, 0, 0);
+
   SystemTaskInit();
   /* USER CODE END 2 */
 

@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;  ../Drivers/STM32F1xx_HAL_Driver/Inc;  ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;  ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;  ../Drivers/CMSIS/Include;  ..\examples;  ..\FreeRTOS\include</IncludePath>
+              <IncludePath>../Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\examples;..\FreeRTOS\include;..\FireBsp</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -392,19 +392,9 @@
           <GroupName>Application/User</GroupName>
           <Files>
             <File>
-              <FileName>bsp_esp8266.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\bsp_esp8266.c</FilePath>
-            </File>
-            <File>
               <FileName>MySystem.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Src\MySystem.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_i2c_eeprom.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\bsp_i2c_eeprom.c</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
@@ -575,6 +565,26 @@
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FreeRTOS\timers.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>FireBsp</GroupName>
+          <Files>
+            <File>
+              <FileName>bsp_color_led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FireBsp\bsp_color_led.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_esp8266.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FireBsp\bsp_esp8266.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_i2c_eeprom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FireBsp\bsp_i2c_eeprom.c</FilePath>
             </File>
           </Files>
         </Group>

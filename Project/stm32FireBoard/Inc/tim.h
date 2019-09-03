@@ -46,8 +46,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
                     
 /* USER CODE BEGIN Prototypes */
 
-extern void setLedColor(uint8_t iled, uint16_t ired, uint16_t igreen, uint16_t iblue);
-extern void setLedFlash(uint8_t iLed, bool bOpen);
 void LED_Timer_Handle(void);
 /* USER CODE END Prototypes */
 

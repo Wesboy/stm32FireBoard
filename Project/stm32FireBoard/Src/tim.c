@@ -223,35 +223,9 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle)
 
 /* USER CODE BEGIN 1 */
 
-static void SetRedPwm(uint16_t pwm)
-{
-  if (pwm)
-    htim3.Instance->CCR2 = pwm;
-  else
-    htim3.Instance->CCR2 = 0;
-}
-
-static void SetGreenPwm(uint16_t pwm)
-{
-  if (pwm)
-    htim3.Instance->CCR3 = pwm;
-  else
-    htim3.Instance->CCR3 = 0;
-}
-
-static void SetBluePwm(uint16_t pwm)
-{
-  if (pwm)
-    htim3.Instance->CCR4 = pwm;
-  else
-    htim3.Instance->CCR4 = 0;
-}
-
 void setLedFlash(uint8_t iLed, bool bOpen)
 {
-  SetRedPwm(0);
-  SetGreenPwm(0);
-  SetBluePwm(0);
+  SetRGBColor(0);
 
   if (bOpen)
   {
@@ -279,38 +253,6 @@ void setLedFlash(uint8_t iLed, bool bOpen)
     if (iLed & 0x04) //Blue
     {
       HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
-    }
-  }
-}
-
-void setLedColor(uint8_t iled, uint16_t ired, uint16_t igreen, uint16_t iblue)
-{
-  if (iled & 0x7)
-  {
-    if (iled & 0x01)
-    {
-      SetRedPwm(ired);
-    }
-    else
-    {
-      SetRedPwm(0);
-    }
-
-    if (iled & 0x02)
-    {
-      SetGreenPwm(igreen);
-    }
-    else
-    {
-      SetGreenPwm(0);
-    }
-    if (iled & 0x04)
-    {
-      SetBluePwm(iblue);
-    }
-    else
-    {
-      SetBluePwm(0);
     }
   }
 }

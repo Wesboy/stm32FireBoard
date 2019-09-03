@@ -51,15 +51,25 @@ static void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *ds
     strEsp8266_Fram_Record.iFramelow = 0;
 }
 
-static void setLedOn(uint8_t iLed, uint8_t bOn)
+static void setLedCtl(uint8_t iCmd, uint8_t bOn)
 {
-    if (bOn == 0x01)
+    uint8_t val = 0;
+    if(bOn)
+        val = 255;
+
+    switch(iCmd)
     {
-        setLedColor(iLed, 255, 255, 255);
-    }
-    else
-    {
-        setLedColor(iLed, 0, 0, 0);
+        case 0x01:
+            SetRedColorValue(val);
+            break;
+        case 0x02:
+            SetGreenColorValue(val);
+            break;
+        case 0x03:
+            SetBlueColorValue(val);
+            break;
+        default:
+            break;
     }
 }
 
@@ -69,8 +79,8 @@ static void ProtocolDataHandle(uint8_t *buf, uint8_t iLenIndex)
 
     switch(buf[i]&0xF0)
     {
-        case 0xB0:
-            setLedOn(buf[i]&0xF, buf[i+1]);
+        case 0xB0:   //Led Control
+            setLedCtl(buf[i]&0xF, buf[i+1]);
             break;
         default:
             break;
@@ -86,9 +96,11 @@ static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighInd
     static uint8_t iFrameLenIndex;
     static uint8_t check;
     static uint8_t rbuf[PROTOCOL_LEN_MAX];
+	
 
     if (*iLowIndex != iHighIndex)
     {
+		//printf("[%d]buf[%d]:%x\r\n", iHighIndex,*iLowIndex, buf[*iLowIndex]);
         switch (iFrameStatus)
         {
         case 0:
@@ -119,9 +131,11 @@ static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighInd
                 check = buf[*iLowIndex];
                 iFrameLen = check;
                 if (iFrameLen > PROTOCOL_LEN_MAX)
+
                 {
                     iFrameStatus = 0;
-                    printf("Protocol length over error!\r\n");
+                    check = 0;
+                    printf("Protocol length=%d over error!\r\n", iFrameLen);
                 }
                 iFrameLenIndex = 0;
             }
@@ -190,9 +204,9 @@ static void WifiESP8266_RxHandle(void)
         if (bStatus == 4) //确认失去连接后重连
         {
             printf("\r\n正在重连热点和服务器 ......\r\n");
-            while (!ESP8266_JoinAP(macUser_ESP8266_ApSsid, macUser_ESP8266_ApPwd))
+            while (!ESP8266_JoinAP(ESP8266_ApSsid, ESP8266_ApPwd))
                 ;
-            while (!ESP8266_Link_Server(enumTCP, macUser_ESP8266_TcpServer_IP, macUser_ESP8266_TcpServer_Port, Single_ID_0))
+            while (!ESP8266_Link_Server(enumTCP, ESP8266_TcpServer_IP, ESP8266_TcpServer_Port, Single_ID_0))
                 ;
             printf("\r\n重连热点和服务器成功\r\n");
         }
@@ -249,7 +263,7 @@ void EEPROM_Test(void *pvParameters)
                 printf("\r\n");
         }
 
-        if(64 == i)
+        if (EEPROM_TEST_WRITEBUFF_MAX == i)
             EEPROM_INFO("I2C(AT24C02)读写测试成功\r\n");
 
 		vTaskDelay(2000);
@@ -263,7 +277,8 @@ static void vRxDataTask( void * pvParameters )
 	{
         comRxHandle();
         WifiESP8266_RxHandle();
-	}
+        vTaskDelay(10);
+    }
 	
 	//delete task
 }
@@ -272,9 +287,9 @@ static void vLedFlash( void * pvParameters )
 {
 	for(;;)
 	{
-        setLedColor(3, 255, 255, 255);
+        SetColorValue(255, 255, 255);
         vTaskDelay(1000);
-        setLedColor(3, 0, 0, 0);
+        SetColorValue(0, 0, 0);
         vTaskDelay(1000);
 	}
 	
@@ -302,9 +317,9 @@ static void vTaskStart( void * pvParameters )
     taskENTER_CRITICAL();           
 
     xTaskCreate(vRxDataTask, "RxDataTask", 256, NULL, 2, NULL);
-    xTaskCreate(vLedFlash, "LedFlash", 256, NULL, 3, NULL);
-    xTaskCreate(ConnectWifiESP8266, "ConnectWifi", 256, NULL, 2, &AppTaskConnectWifi_Handle);
-    xTaskCreate(EEPROM_Test, "EEPROM_Test", 256, NULL, 2, NULL);
+//    xTaskCreate(vLedFlash, "LedFlash", 256, NULL, 3, NULL);
+    xTaskCreate(ConnectWifiESP8266, "ConnectWifi", 256, NULL, 3, &AppTaskConnectWifi_Handle);
+//    xTaskCreate(EEPROM_Test, "EEPROM_Test", 256, NULL, 2, NULL);
     //delete task
 
     vTaskDelete(AppTaskCreate_Handle);
