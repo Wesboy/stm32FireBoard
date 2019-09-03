@@ -168,32 +168,17 @@ uint8_t GetColorValue(uint8_t iRgb)
 	* @param  r\g\b:要设置LED显示的颜色值
   * @retval 无
   */
-void SetRedColorValue(uint8_t r)
+void SetColorVal(uint8_t iCol, uint16_t rgb)
 {
+
   //根据颜色值修改定时器的比较寄存器值
-  COLOR_TIMx->COLOR_RED_CCRx = r;
+  if(0x01 == iCol)
+    COLOR_TIMx->COLOR_RED_CCRx = rgb;
+  else if (0x02 == iCol)
+    COLOR_TIMx->COLOR_GREEN_CCRx = rgb;
+  else if (0x03 == iCol)
+    COLOR_TIMx->COLOR_BLUE_CCRx = rgb;
 }
 
-/**
-  * @brief  设置RGB LED的颜色
-	* @param  r\g\b:要设置LED显示的颜色值
-  * @retval 无
-  */
-void SetGreenColorValue(uint8_t g)
-{
-  //根据颜色值修改定时器的比较寄存器值
-  COLOR_TIMx->COLOR_GREEN_CCRx = g;
-}
-
-/**
-  * @brief  设置RGB LED的颜色
-	* @param  r\g\b:要设置LED显示的颜色值
-  * @retval 无
-  */
-void SetBlueColorValue(uint8_t b)
-{
-  //根据颜色值修改定时器的比较寄存器值
-  COLOR_TIMx->COLOR_BLUE_CCRx = b;
-}
 
 /*********************************************END OF FILE**********************/

@@ -59,9 +59,7 @@ void SetRGBColor(uint32_t rgb);
 void SetColorValue(uint8_t r,uint8_t g,uint8_t b);
 uint8_t GetColorValue(uint8_t iRgb);
 
-void SetRedColorValue(uint8_t r);
-void SetGreenColorValue(uint8_t g);
-void SetBlueColorValue(uint8_t b);
+void SetColorVal(uint8_t iCol, uint16_t rgb);
 
 #endif /* __COLOR_LED_H */
 

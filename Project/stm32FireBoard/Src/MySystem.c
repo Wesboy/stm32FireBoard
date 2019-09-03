@@ -51,36 +51,37 @@ static void ESP8266_Config(char *p_ApSsid, char *p_ApPwd, char *dst_ip, char *ds
     strEsp8266_Fram_Record.iFramelow = 0;
 }
 
-static void setLedCtl(uint8_t iCmd, uint8_t bOn)
+static void setLedCtl(uint8_t iCmd[])
 {
-    uint8_t val = 0;
-    if(bOn)
-        val = 255;
+    uint16_t val = 0;
+    uint8_t iCol = 0;
 
-    switch(iCmd)
+    if((iCmd[0]&0xF) < 4)
     {
-        case 0x01:
-            SetRedColorValue(val);
-            break;
-        case 0x02:
-            SetGreenColorValue(val);
-            break;
-        case 0x03:
-            SetBlueColorValue(val);
-            break;
-        default:
-            break;
+        iCol = iCmd[0]&0xF;
+        val = (iCmd[1] == 1 ? 0xFF : 0x0);
     }
+    else if((iCmd[0]&0xF) < 7)
+    {
+        val = iCmd[2];
+        val = (val<<8) | iCmd[1]; 
+        if(iCmd[0] == 0xB4)
+            iCol = 0x01;
+        else if (iCmd[1] == 0xB5)
+            iCol = 0x02;
+        else if (iCmd[1] == 0xB6)
+            iCol = 0x03;
+    }
+    SetColorVal(iCol, val);
 }
+
 
 static void ProtocolDataHandle(uint8_t *buf, uint8_t iLenIndex)
 {
-    uint8_t i = 0;
-
-    switch(buf[i]&0xF0)
+    switch(buf[0]&0xF0)
     {
         case 0xB0:   //Led Control
-            setLedCtl(buf[i]&0xF, buf[i+1]);
+            setLedCtl(buf);
             break;
         default:
             break;
@@ -100,7 +101,6 @@ static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighInd
 
     if (*iLowIndex != iHighIndex)
     {
-		//printf("[%d]buf[%d]:%x\r\n", iHighIndex,*iLowIndex, buf[*iLowIndex]);
         switch (iFrameStatus)
         {
         case 0:
@@ -151,7 +151,7 @@ static void ProtocolDecoder(uint8_t *buf, uint16_t *iLowIndex, uint16_t iHighInd
             {
                 if (buf[*iLowIndex] == check)
                 {
-                    printf("data ok %x %x\r\n", rbuf[0], rbuf[1]);
+                    printf("data ok %x %x %x\r\n", rbuf[0], rbuf[1], rbuf[2]);
                     ProtocolDataHandle(rbuf, iFrameLenIndex);
                 }
                 else
@@ -276,7 +276,7 @@ static void vRxDataTask( void * pvParameters )
 	for(;;)
 	{
         comRxHandle();
-        WifiESP8266_RxHandle();
+//        WifiESP8266_RxHandle();
         vTaskDelay(10);
     }
 	
@@ -318,7 +318,7 @@ static void vTaskStart( void * pvParameters )
 
     xTaskCreate(vRxDataTask, "RxDataTask", 256, NULL, 2, NULL);
 //    xTaskCreate(vLedFlash, "LedFlash", 256, NULL, 3, NULL);
-    xTaskCreate(ConnectWifiESP8266, "ConnectWifi", 256, NULL, 3, &AppTaskConnectWifi_Handle);
+//    xTaskCreate(ConnectWifiESP8266, "ConnectWifi", 256, NULL, 3, &AppTaskConnectWifi_Handle);
 //    xTaskCreate(EEPROM_Test, "EEPROM_Test", 256, NULL, 2, NULL);
     //delete task
 

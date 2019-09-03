@@ -7,7 +7,7 @@
 #include "tim.h"
 
 #define PROTOCOL_LEN_MAX 12
-#define COM_REBUFF_LEN_MAX 256
+#define COM_REBUFF_LEN_MAX 512
 
 
 //#define ESP8266_ApSsid "chen159"     //要连接的热点的名称
